@@ -1,0 +1,38 @@
+# Known cross-backend aliases mapping canonical_id -> backend-specific IDs
+# Format: canonical_id = { apt = "...", snap = "...", flatpak = "...", brew = "..." }
+
+[firefox]
+apt = "firefox"
+snap = "firefox"
+flatpak = "org.mozilla.firefox"
+
+[code]
+apt = "code"
+snap = "code"
+flatpak = "com.visualstudio.code"
+
+[vlc]
+apt = "vlc"
+snap = "vlc"
+flatpak = "org.videolan.VLC"
+
+[discord]
+snap = "discord"
+flatpak = "com.discordapp.Discord"
+
+[spotify]
+snap = "spotify"
+flatpak = "com.spotify.Client"
+
+[ripgrep]
+apt = "ripgrep"
+brew = "ripgrep"
+cargo = "ripgrep"
+
+[htop]
+apt = "htop"
+brew = "htop"
+
+[git]
+apt = "git"
+brew = "git"
