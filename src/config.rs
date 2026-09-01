@@ -18,7 +18,7 @@ pub struct Config {
     pub cache_ttl_hours: u64,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BackendConfig {
     #[serde(default = "default_true")]
     pub apt: bool,
@@ -36,6 +36,21 @@ pub struct BackendConfig {
     pub appimage: bool,
     #[serde(default = "default_true")]
     pub direct_deb: bool,
+}
+
+impl Default for BackendConfig {
+    fn default() -> Self {
+        Self {
+            apt: true,
+            snap: true,
+            flatpak: true,
+            brew: true,
+            pipx: true,
+            cargo: true,
+            appimage: true,
+            direct_deb: true,
+        }
+    }
 }
 
 fn default_backend_priority() -> Vec<String> {
@@ -116,8 +131,21 @@ pub fn load_config() -> Result<Config> {
     let path = config_path()?;
     if path.exists() {
         let content = fs::read_to_string(&path)?;
-        let config: Config = toml::from_str(&content)
+        let mut config: Config = toml::from_str(&content)
             .with_context(|| format!("failed to parse config at {}", path.display()))?;
+        // Recover from corrupted initial configs where all backends were disabled
+        if !config.backends.apt
+            && !config.backends.snap
+            && !config.backends.flatpak
+            && !config.backends.brew
+            && !config.backends.pipx
+            && !config.backends.cargo
+            && !config.backends.appimage
+            && !config.backends.direct_deb
+        {
+            config.backends = BackendConfig::default();
+            save_config(&config)?;
+        }
         Ok(config)
     } else {
         let config = Config::default();

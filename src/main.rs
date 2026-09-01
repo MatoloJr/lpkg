@@ -1,24 +1,18 @@
-mod backends;
-mod cli;
-mod config;
-mod core;
-mod models;
-mod output;
-
 use anyhow::Result;
-use backends::all_backends;
 use chrono::Utc;
 use clap::Parser;
-use cli::{Cli, Commands, OutputFormat, PinCommands};
 use clap::CommandFactory;
 use clap_complete::generate;
 use comfy_table::{presets::UTF8_FULL, Cell, Table};
-use config::{ensure_dirs, load_config};
-use core::orchestrator::UpgradeOrchestrator;
-use core::registry::InstallRegistry;
-use core::resolver::PackageResolver;
-use models::{ExportManifest, ManifestPackage, RegistryEntry};
-use output::print_candidates;
+use lpkg::backends::all_backends;
+use lpkg::backends;
+use lpkg::cli::{Cli, Commands, OutputFormat, PinCommands};
+use lpkg::config::{ensure_dirs, load_config, is_backend_enabled, enabled_backends, Config};
+use lpkg::core::orchestrator::UpgradeOrchestrator;
+use lpkg::core::registry::InstallRegistry;
+use lpkg::core::resolver::PackageResolver;
+use lpkg::models::{ExportManifest, ManifestPackage, RegistryEntry};
+use lpkg::output::print_candidates;
 use std::fs;
 use std::io;
 use std::process;
@@ -67,7 +61,7 @@ fn run(cli: Cli) -> Result<()> {
 
 fn cmd_search(
     backends: &[Box<dyn backends::Backend>],
-    config: &config::Config,
+    config: &Config,
     query: &str,
     sources: Option<&[String]>,
 ) -> Result<()> {
@@ -83,7 +77,7 @@ fn cmd_search(
 
 fn cmd_install(
     backends: &[Box<dyn backends::Backend>],
-    config: &config::Config,
+    config: &Config,
     id: &str,
     source: Option<&str>,
     version: Option<&str>,
@@ -112,7 +106,7 @@ fn cmd_install(
 
 fn cmd_list(
     backends: &[Box<dyn backends::Backend>],
-    config: &config::Config,
+    config: &Config,
     outdated: bool,
     duplicates: bool,
     apps_only: bool,
@@ -172,7 +166,7 @@ fn cmd_list(
 
 fn cmd_upgrade(
     backends: &[Box<dyn backends::Backend>],
-    config: &config::Config,
+    config: &Config,
     id: Option<&str>,
     all: bool,
     dry_run: bool,
@@ -214,7 +208,7 @@ fn cmd_upgrade(
 
 fn cmd_uninstall(
     backends: &[Box<dyn backends::Backend>],
-    config: &config::Config,
+    config: &Config,
     id: &str,
     purge: bool,
     source: Option<&str>,
@@ -249,7 +243,7 @@ fn cmd_uninstall(
 
 fn cmd_cleanup(
     backends: &[Box<dyn backends::Backend>],
-    config: &config::Config,
+    config: &Config,
     sources: Option<&[String]>,
 ) -> Result<()> {
     let orchestrator = UpgradeOrchestrator::new(backends, config);
@@ -260,17 +254,29 @@ fn cmd_cleanup(
     Ok(())
 }
 
-fn cmd_scan(backends: &[Box<dyn backends::Backend>], config: &config::Config) -> Result<()> {
+fn cmd_scan(backends: &[Box<dyn backends::Backend>], config: &Config) -> Result<()> {
     let resolver = PackageResolver::new(backends, config)?;
     let registry = InstallRegistry::open()?;
     let packages = resolver.list_installed(config.apps_only)?;
     let data = serde_json::to_string(&packages)?;
     registry.cache_scan("all", &data)?;
     println!("Scanned {} packages", packages.len());
+
+    // Report per-backend status
+    let enabled = enabled_backends(config);
+    for backend in backends.iter() {
+        if !enabled.contains(&backend.id().to_string()) {
+            continue;
+        }
+        match backend.list_installed(config.apps_only) {
+            Ok(pkgs) => eprintln!("  {}: {} package(s)", backend.id(), pkgs.len()),
+            Err(e) => eprintln!("  {}: error - {e}", backend.id()),
+        }
+    }
     Ok(())
 }
 
-fn cmd_doctor(backends: &[Box<dyn backends::Backend>], config: &config::Config) -> Result<()> {
+fn cmd_doctor(backends: &[Box<dyn backends::Backend>], config: &Config) -> Result<()> {
     let mut issues = 0;
 
     println!("lpkg doctor\n");
@@ -280,7 +286,7 @@ fn cmd_doctor(backends: &[Box<dyn backends::Backend>], config: &config::Config) 
     for backend in backends.iter() {
         let status = if backend.available() { "available" } else { "missing" };
         println!("  {}: {status}", backend.id());
-        if !backend.available() && config::is_backend_enabled(config, backend.id()) {
+        if !backend.available() && is_backend_enabled(config, backend.id()) {
             issues += 1;
         }
     }
@@ -318,7 +324,7 @@ fn cmd_doctor(backends: &[Box<dyn backends::Backend>], config: &config::Config) 
 
 fn cmd_pin(
     backends: &[Box<dyn backends::Backend>],
-    config: &config::Config,
+    config: &Config,
     action: PinCommands,
 ) -> Result<()> {
     let registry = InstallRegistry::open()?;
@@ -394,7 +400,7 @@ fn cmd_pin(
 
 fn cmd_export(
     backends: &[Box<dyn backends::Backend>],
-    config: &config::Config,
+    config: &Config,
     output: &std::path::Path,
 ) -> Result<()> {
     let resolver = PackageResolver::new(backends, config)?;
@@ -433,7 +439,7 @@ fn cmd_export(
 
 fn cmd_import(
     backends: &[Box<dyn backends::Backend>],
-    config: &config::Config,
+    config: &Config,
     file: &std::path::Path,
     dry_run: bool,
 ) -> Result<()> {
