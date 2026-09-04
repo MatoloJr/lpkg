@@ -5,5 +5,5 @@ Priority: optional
 Architecture: amd64
 Maintainer: lpkg <lpkg@localhost>
 Description: winget-like package orchestrator for Ubuntu/Debian Linux
- A unified CLI for installing, upgrading, listing, and cleaning up
- packages across apt, snap, flatpak, brew, pipx, cargo, and more.
+ A unified CLI for installing, upgrading, listing and cleaning up
+ packages across apt, snap, flatpak, brew, pipx, cargo and more.

@@ -2,7 +2,7 @@
 
 A winget-like package orchestrator for Ubuntu and Debian-based Linux distributions.
 
-`lpkg` unifies install, upgrade, inventory, cleanup, pinning, and export across multiple package managers:
+`lpkg` unifies install, upgrade, inventory, cleanup, pinning and export across multiple package managers:
 
 - **apt** — system packages
 - **snap** — Ubuntu snaps
