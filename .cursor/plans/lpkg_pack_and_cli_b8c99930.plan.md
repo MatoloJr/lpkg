@@ -22,7 +22,7 @@ todos:
     status: completed
   - id: tag-release
     content: Tag v0.2.0 and create GitHub release with binary + deb (after user approves commit/push)
-    status: in_progress
+    status: completed
 isProject: false
 ---
 
