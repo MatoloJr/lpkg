@@ -344,33 +344,63 @@
       border-color: var(--ok);
     }
 
-    .cmd-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.92rem;
-      margin: 1rem 0 1.5rem;
+    .cmd-toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 1rem 0 1.75rem;
+      padding: 0;
+      list-style: none;
     }
-    .cmd-table th,
-    .cmd-table td {
-      text-align: left;
-      padding: 0.65rem 0.5rem;
-      border-bottom: 1px solid rgba(200, 208, 224, 0.1);
-      vertical-align: top;
-    }
-    .cmd-table th {
-      color: var(--muted);
-      font-weight: 500;
+    .cmd-toc a {
+      font-family: var(--font-mono);
       font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      text-decoration: none;
+      color: var(--mist);
+      padding: 0.3rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid rgba(200, 208, 224, 0.12);
+      background: rgba(23, 35, 58, 0.6);
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
     }
-    .cmd-table code {
+    .cmd-toc a:hover {
+      color: var(--accent-2);
+      border-color: rgba(45, 212, 191, 0.35);
+      background: rgba(45, 212, 191, 0.08);
+    }
+
+    .cmd-entry {
+      padding: 1.35rem 0;
+      border-top: 1px solid rgba(200, 208, 224, 0.08);
+    }
+    .cmd-entry:first-of-type { border-top: none; padding-top: 0.25rem; }
+    .cmd-entry h3 {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: 0.95rem;
+      margin: 0 0 0.55rem;
+      letter-spacing: -0.01em;
+      color: var(--accent-2);
+    }
+    .cmd-entry .use {
+      margin: 0 0 0.75rem;
+      color: var(--paper);
+      font-weight: 500;
+    }
+    .cmd-entry p { margin-bottom: 0.65rem; }
+    .cmd-entry .flags {
+      margin: 0.5rem 0 0.85rem;
+      padding-left: 1.15rem;
+      color: var(--mist);
+      font-size: 0.95rem;
+    }
+    .cmd-entry .flags li { margin-bottom: 0.35rem; }
+    .cmd-entry .flags code {
       font-family: var(--font-mono);
       font-size: 0.82rem;
-      color: var(--accent-2);
-      white-space: nowrap;
+      color: var(--accent);
     }
-    .cmd-table td:last-child { color: var(--mist); }
+    .cmd-entry .codeblock { margin-bottom: 0.35rem; }
 
     .callout {
       margin: 1.25rem 0;
@@ -423,18 +453,6 @@
     @media (max-width: 560px) {
       .wrap { width: min(var(--max), calc(100% - 1.5rem)); }
       .hero { min-height: auto; padding-top: 3rem; }
-      .cmd-table { display: block; }
-      .cmd-table thead { display: none; }
-      .cmd-table tr {
-        display: block;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid rgba(200, 208, 224, 0.1);
-      }
-      .cmd-table td {
-        display: block;
-        border: none;
-        padding: 0.15rem 0;
-      }
     }
   </style>
 </head>
@@ -604,40 +622,287 @@ lpkg install --all my-packages.json</code></pre>
 
     <section id="commands" class="reveal">
       <div class="wrap">
-        <p class="eyebrow">CLI</p>
-        <h2>Commands</h2>
-        <p>Search and install hit <strong>all enabled backends</strong> unless you pass <code>--source</code>. Use <code>-a</code> / <code>--auto</code> for replace-on-install and outdated-only upgrades.</p>
+        <p class="eyebrow">CLI reference</p>
+        <h2>All commands</h2>
+        <p>
+          Every subcommand below works across your <strong>enabled backends</strong> unless you narrow with <code>--source</code>.
+          Jump to a command, then read when to use it and the main flags.
+        </p>
 
-        <table class="cmd-table">
-          <thead>
-            <tr><th>Command</th><th>What it does</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><code>lpkg search &lt;q…&gt;</code></td><td>Search every enabled backend for each query; merge and dedupe</td></tr>
-            <tr><td><code>lpkg install &lt;id…&gt;</code></td><td>Install each id via best backend (or <code>--source</code>)</td></tr>
-            <tr><td><code>lpkg install --all [file]</code></td><td>Install from a JSON manifest (default <code>packages.json</code>)</td></tr>
-            <tr><td><code>lpkg install … --auto</code></td><td>Remove an existing install of the same id, then install</td></tr>
-            <tr><td><code>lpkg list</code></td><td>Inventory (<code>--outdated</code>, <code>--duplicates</code>, <code>--format json</code>)</td></tr>
-            <tr><td><code>lpkg upgrade</code></td><td>Upgrade outdated packages only</td></tr>
-            <tr><td><code>lpkg upgrade --all</code></td><td>Run each backend’s full upgrade</td></tr>
-            <tr><td><code>lpkg upgrade &lt;id&gt; --auto</code></td><td>Upgrade only if outdated; no-op if current</td></tr>
-            <tr><td><code>lpkg uninstall &lt;id&gt;</code></td><td>Remove a managed package (<code>--purge</code>, <code>--source</code>)</td></tr>
-            <tr><td><code>lpkg info / which</code></td><td>Inspect candidates and which backend provides a package</td></tr>
-            <tr><td><code>lpkg cleanup / scan / doctor</code></td><td>Maintenance and health checks</td></tr>
-            <tr><td><code>lpkg pin / export / import</code></td><td>Pinning and manifest round-trip</td></tr>
-          </tbody>
-        </table>
+        <ul class="cmd-toc" aria-label="Command index">
+          <li><a href="#cmd-search">search</a></li>
+          <li><a href="#cmd-install">install</a></li>
+          <li><a href="#cmd-list">list</a></li>
+          <li><a href="#cmd-upgrade">upgrade</a></li>
+          <li><a href="#cmd-uninstall">uninstall</a></li>
+          <li><a href="#cmd-cleanup">cleanup</a></li>
+          <li><a href="#cmd-info">info</a></li>
+          <li><a href="#cmd-which">which</a></li>
+          <li><a href="#cmd-scan">scan</a></li>
+          <li><a href="#cmd-doctor">doctor</a></li>
+          <li><a href="#cmd-pin">pin</a></li>
+          <li><a href="#cmd-export">export</a></li>
+          <li><a href="#cmd-import">import</a></li>
+          <li><a href="#cmd-completions">completions</a></li>
+          <li><a href="#cmd-version">--version</a></li>
+        </ul>
 
-        <h3>Examples</h3>
-        <div class="codeblock">
-          <button type="button" class="copy" data-copy>Copy</button>
-          <pre><code>lpkg search firefox code
+        <article class="cmd-entry" id="cmd-search">
+          <h3>lpkg search &lt;query…&gt;</h3>
+          <p class="use">Use case: discover where a package exists before you install.</p>
+          <p>
+            Queries <strong>all enabled backends</strong> for each term you pass, then merges and dedupes candidates
+            (same backend + id appears once). Pass multiple terms in one call when you are shopping for several apps.
+            Empty search is rejected — listing every package on apt/Flathub is not useful.
+          </p>
+          <ul class="flags">
+            <li><code>--source apt,flatpak</code> — limit search to listed backends (comma-separated).</li>
+          </ul>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg search firefox
+lpkg search firefox code
+lpkg search neovim --source apt,brew</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-install">
+          <h3>lpkg install [ids…] [options]</h3>
+          <p class="use">Use case: put software on the machine with one consistent interface.</p>
+          <p>
+            Installs each package id in order. Without <code>--source</code>, the resolver walks
+            <code>backend_priority</code> and picks the first enabled backend that can provide the package.
+            Records the install in the local registry afterward.
+          </p>
+          <ul class="flags">
+            <li><code>--source &lt;backend&gt;</code> — force a backend (e.g. <code>flatpak</code>, <code>apt</code>).</li>
+            <li><code>--version &lt;ver&gt;</code> — pin a version when installing a <strong>single</strong> id (error if used with multiple ids).</li>
+            <li><code>--all [file]</code> — bulk-install from a JSON manifest (default file: <code>packages.json</code> in the current directory).</li>
+            <li><code>-a</code> / <code>--auto</code> — if the package is already installed, uninstall the old copy first, then install (replace / reinstall).</li>
+          </ul>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg install firefox
+lpkg install firefox code
+lpkg install code --source apt
 lpkg install firefox --auto
-lpkg upgrade
+lpkg install --all
+lpkg install --all my-packages.json</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-list">
+          <h3>lpkg list [options]</h3>
+          <p class="use">Use case: see what is installed, what is stale and where you have duplicate copies.</p>
+          <p>
+            Prints inventory across enabled backends (apps-focused by default). Use the flags below for audits,
+            scripting, or cleanup decisions before <code>uninstall</code> / <code>upgrade</code>.
+          </p>
+          <ul class="flags">
+            <li><code>--outdated</code> — only packages with a known newer version.</li>
+            <li><code>--duplicates</code> — same canonical app installed via more than one backend.</li>
+            <li><code>--all</code> — include non-app packages where backends support that distinction.</li>
+            <li><code>--format table|json</code> — human table (default) or machine-readable JSON.</li>
+            <li><code>--source …</code> — optional backend filter (comma-separated).</li>
+          </ul>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg list
+lpkg list --outdated
+lpkg list --duplicates
+lpkg list --all
+lpkg list --format json</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-upgrade">
+          <h3>lpkg upgrade [id] [options]</h3>
+          <p class="use">Use case: keep packages current without manually invoking each package manager.</p>
+          <p>
+            Behavior depends on flags. Bare <code>upgrade</code> (or <code>upgrade --auto</code> with no id) upgrades only
+            packages reported as outdated. <code>--all</code> runs each backend’s native full upgrade. Targeting one id
+            upgrades that install; with <code>--auto</code>, it upgrades only if outdated and exits quietly if already current.
+          </p>
+          <ul class="flags">
+            <li><code>--all</code> — backend <code>upgrade_all</code> for every enabled manager (broader than outdated-only).</li>
+            <li><code>-a</code> / <code>--auto</code> — outdated-only mode when no id; with an id, skip if up to date.</li>
+            <li><code>--dry-run</code> — print what would be upgraded without applying changes.</li>
+            <li><code>--source &lt;backend&gt;</code> — restrict to one backend.</li>
+          </ul>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg upgrade
+lpkg upgrade --auto
 lpkg upgrade --all
-lpkg info firefox
-lpkg which firefox</code></pre>
-        </div>
+lpkg upgrade firefox
+lpkg upgrade firefox --auto
+lpkg upgrade --dry-run</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-uninstall">
+          <h3>lpkg uninstall &lt;id&gt; [options]</h3>
+          <p class="use">Use case: remove an application or tool you no longer want, through the right backend.</p>
+          <p>
+            Finds installed copies matching the id, asks that backend to uninstall and removes the registry entry.
+            This is for <strong>packages managed via lpkg</strong> — not for removing the lpkg binary itself
+            (see <a href="#uninstall">Uninstall</a>).
+          </p>
+          <ul class="flags">
+            <li><code>--purge</code> — remove config/data where the backend supports purge (notably apt).</li>
+            <li><code>--source &lt;backend&gt;</code> — if duplicates exist, remove only the copy from that backend.</li>
+          </ul>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg uninstall firefox
+lpkg uninstall firefox --purge
+lpkg uninstall code --source apt</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-cleanup">
+          <h3>lpkg cleanup [--source …]</h3>
+          <p class="use">Use case: reclaim disk after upgrades — old snap revisions, unused Flatpak runtimes, caches, etc.</p>
+          <p>
+            Runs each enabled backend’s cleanup routine and prints a short freed/status report per backend.
+            Safe maintenance after large upgrade sessions.
+          </p>
+          <ul class="flags">
+            <li><code>--source snap,flatpak</code> — clean only listed backends.</li>
+          </ul>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg cleanup
+lpkg cleanup --source snap</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-info">
+          <h3>lpkg info &lt;id&gt;</h3>
+          <p class="use">Use case: inspect before you reinstall, switch backends, or use <code>--auto</code>.</p>
+          <p>
+            Shows currently installed copies (backend, version, outdated hints) and live search candidates for the same id.
+            Prefer this when you are unsure whether something is apt vs Flatpak, or whether an update is available.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg info firefox</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-which">
+          <h3>lpkg which &lt;id&gt;</h3>
+          <p class="use">Use case: answer “which package manager owns this install?” in one line.</p>
+          <p>
+            Prints backend, backend-specific id and version for each installed match. Errors if the package is not installed.
+            Handy in scripts or when resolving duplicate installs.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg which firefox</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-scan">
+          <h3>lpkg scan</h3>
+          <p class="use">Use case: refresh lpkg’s inventory cache after installing outside of lpkg or changing backends.</p>
+          <p>
+            Lists installed packages from enabled backends, writes a scan cache into the registry and prints per-backend counts.
+            Run this when <code>list</code> feels stale relative to the system.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg scan</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-doctor">
+          <h3>lpkg doctor</h3>
+          <p class="use">Use case: diagnose why search/install fails or the system looks unhealthy.</p>
+          <p>
+            Checks which backends are available vs enabled, warns about dpkg locks, reports duplicate installations,
+            and summarizes registry tracking. Exits non-zero when issues are found — useful in CI or post-install checks.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg doctor</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-pin">
+          <h3>lpkg pin add|remove|list</h3>
+          <p class="use">Use case: freeze a package so routine upgrades leave it alone (distro version, known-good build).</p>
+          <p>
+            Pins are recorded in the registry and applied via the owning backend when supported.
+            Always pin an <strong>installed</strong> package; use <code>--source</code> when multiple backends provide it.
+          </p>
+          <ul class="flags">
+            <li><code>pin add &lt;id&gt; [--source …] [--reason "…"]</code> — prevent upgrades; reason is for your notes.</li>
+            <li><code>pin remove &lt;id&gt; [--source …]</code> — allow upgrades again.</li>
+            <li><code>pin list</code> — show pinned packages and reasons.</li>
+          </ul>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg pin add firefox --reason "distro version"
+lpkg pin list
+lpkg pin remove firefox</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-export">
+          <h3>lpkg export -o &lt;file&gt;</h3>
+          <p class="use">Use case: snapshot your package set for backup or another machine.</p>
+          <p>
+            Writes a JSON manifest of installed packages (and pin metadata when present). Pair with
+            <code>import</code> or <code>install --all</code> to recreate the environment.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg export -o packages.json</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-import">
+          <h3>lpkg import &lt;file&gt; [--dry-run]</h3>
+          <p class="use">Use case: reinstall from a previously exported manifest.</p>
+          <p>
+            Reads the JSON and installs each entry via the recorded backend; re-applies pins when the manifest includes them.
+            Use <code>--dry-run</code> to preview without changing the system.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg import packages.json --dry-run
+lpkg import packages.json</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-completions">
+          <h3>lpkg completions &lt;shell&gt;</h3>
+          <p class="use">Use case: tab-complete subcommands and flags in your shell.</p>
+          <p>
+            Emits completion scripts for shells supported by clap (e.g. <code>bash</code>, <code>zsh</code>, <code>fish</code>, <code>powershell</code>, <code>elvish</code>).
+            Redirect the output into your shell’s completion directory.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg completions bash | sudo tee /etc/bash_completion.d/lpkg
+lpkg completions zsh > ~/.zfunc/_lpkg</code></pre>
+          </div>
+        </article>
+
+        <article class="cmd-entry" id="cmd-version">
+          <h3>lpkg --version</h3>
+          <p class="use">Use case: confirm which lpkg build is on your <code>PATH</code>.</p>
+          <p>
+            Prints the crate version (currently <strong>0.2.0</strong>). Also available as <code>-V</code>.
+            Use after install, upgrade of the tool, or when reporting bugs.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg --version
+lpkg -V</code></pre>
+          </div>
+        </article>
       </div>
     </section>
 
