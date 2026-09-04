@@ -13,7 +13,7 @@ todos:
     status: completed
   - id: publish-tag
     content: Bump to 0.2.1, tag and publish so Packages sidebar populates; set package public if needed
-    status: in_progress
+    status: completed
 isProject: false
 ---
 
