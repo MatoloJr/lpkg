@@ -4,16 +4,16 @@ overview: Ship lpkg 0.2.0 with multi-package and bulk install/search, `--auto` r
 todos:
   - id: cli-search-install
     content: Multi-query search, multi-id install, install --all from manifest
-    status: in_progress
+    status: completed
   - id: cli-auto
     content: Add --auto/-a to install (replace) and upgrade (outdated-only / bare upgrade)
-    status: pending
+    status: completed
   - id: cli-info-which-version
     content: Add info, which, and clap --version
-    status: pending
+    status: completed
   - id: packaging
     content: Makefile, install.sh, build-deb.sh, system data paths, bump to 0.2.0
-    status: pending
+    status: in_progress
   - id: ci-release
     content: GitHub Actions release workflow for tag v*
     status: pending

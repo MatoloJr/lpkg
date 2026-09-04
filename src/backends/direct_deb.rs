@@ -3,7 +3,6 @@ use crate::models::{Candidate, CleanupReport, Package, UpdateAvailable};
 use anyhow::{bail, Context, Result};
 use serde::Deserialize;
 use std::fs;
-use std::path::PathBuf;
 
 #[derive(Debug, Deserialize)]
 struct DebPackageEntry {

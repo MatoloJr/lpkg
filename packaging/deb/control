@@ -1,9 +1,11 @@
 Package: lpkg
-Version: 0.1.0
+Version: 0.2.0
 Section: utils
 Priority: optional
 Architecture: amd64
-Maintainer: lpkg <lpkg@localhost>
+Maintainer: MatoloJr <https://github.com/MatoloJr/lpkg>
+Depends: libc6
 Description: winget-like package orchestrator for Ubuntu/Debian Linux
  A unified CLI for installing, upgrading, listing and cleaning up
  packages across apt, snap, flatpak, brew, pipx, cargo and more.
+Homepage: https://github.com/MatoloJr/lpkg

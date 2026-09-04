@@ -1,10 +1,14 @@
 [package]
 name = "lpkg"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "A winget-like package orchestrator for Ubuntu/Debian-based Linux"
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/MatoloJr/lpkg"
+homepage = "https://github.com/MatoloJr/lpkg"
+keywords = ["package-manager", "apt", "flatpak", "snap", "linux"]
+categories = ["command-line-utilities"]
 
 [[bin]]
 name = "lpkg"
