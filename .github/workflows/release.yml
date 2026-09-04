@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Package tarball
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          ARCH="x86_64"
+          STAGE="dist/lpkg-${VERSION}-linux-${ARCH}"
+          mkdir -p "$STAGE/data"
+          cp target/release/lpkg "$STAGE/lpkg"
+          cp data/aliases.toml data/direct-deb-index.json "$STAGE/data/"
+          cp README.md "$STAGE/"
+          tar -C dist -czf "dist/lpkg-${VERSION}-linux-${ARCH}.tar.gz" "lpkg-${VERSION}-linux-${ARCH}"
+          cp target/release/lpkg "dist/lpkg-${VERSION}-linux-${ARCH}-bin"
+
+      - name: Build .deb
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq dpkg-dev
+          chmod +x scripts/build-deb.sh
+          ./scripts/build-deb.sh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/lpkg-*.tar.gz
+            dist/lpkg-*-bin
+            dist/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
