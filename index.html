@@ -415,6 +415,28 @@
     }
     .callout p:last-child { margin-bottom: 0; }
 
+    .err-entry {
+      padding: 1.25rem 0;
+      border-top: 1px solid rgba(200, 208, 224, 0.08);
+    }
+    .err-entry:first-of-type { border-top: none; padding-top: 0.15rem; }
+    .err-entry h3 {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin: 0 0 0.5rem;
+      color: var(--danger);
+      letter-spacing: -0.01em;
+      line-height: 1.4;
+    }
+    .err-entry .fix {
+      margin: 0 0 0.65rem;
+      color: var(--paper);
+      font-weight: 500;
+    }
+    .err-entry p { margin-bottom: 0.55rem; }
+    .err-entry .codeblock { margin-bottom: 0.25rem; }
+
     .split-label {
       display: inline-block;
       font-size: 0.72rem;
@@ -468,6 +490,7 @@
         <a href="#install">Install</a>
         <a href="#customize">Customize</a>
         <a href="#commands">Commands</a>
+        <a href="#errors">Errors</a>
         <a href="#uninstall">Uninstall</a>
       </nav>
     </div>
@@ -903,6 +926,160 @@ lpkg completions zsh > ~/.zfunc/_lpkg</code></pre>
 lpkg -V</code></pre>
           </div>
         </article>
+      </div>
+    </section>
+
+    <section id="errors" class="reveal">
+      <div class="wrap">
+        <p class="eyebrow">Troubleshooting</p>
+        <h2>Handling common errors</h2>
+        <p>
+          Most failures come from a missing backend binary, a package that cannot be resolved,
+          a lock held by another package manager, or a bad config/manifest path.
+          Start with <code>lpkg doctor</code>, then match the message below.
+        </p>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>lpkg doctor
+lpkg scan</code></pre>
+        </div>
+
+        <article class="err-entry">
+          <h3>could not resolve package … on any enabled backend</h3>
+          <p class="fix">What it means: no enabled, available backend reported a match for that id.</p>
+          <p>
+            The name may be wrong, the backend that has it may be disabled, or it only exists under a
+            different id (e.g. Flatpak app id). Search first, then install with an explicit source if needed.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg search myapp
+lpkg info myapp
+lpkg install myapp --source flatpak
+# or enable the backend in ~/.config/lpkg/config.toml under [backends]</code></pre>
+          </div>
+        </article>
+
+        <article class="err-entry">
+          <h3>backend … not available / doctor shows “missing”</h3>
+          <p class="fix">What it means: that manager is enabled in config but its CLI is not on your <code>PATH</code>.</p>
+          <p>
+            Install the tool (e.g. <code>flatpak</code>, <code>snap</code>, <code>brew</code>) or set the backend to
+            <code>false</code> in config so lpkg stops expecting it. <code>doctor</code> counts enabled-but-missing backends as issues.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg doctor
+which flatpak snap brew pipx
+# disable unused backends:
+# [backends]
+# snap = false
+# brew = false</code></pre>
+          </div>
+        </article>
+
+        <article class="err-entry">
+          <h3>package … is not installed</h3>
+          <p class="fix">What it means: uninstall, upgrade, pin, or which looked for an install and found none.</p>
+          <p>
+            Confirm the id with <code>list</code> / <code>search</code>. If you installed outside lpkg, run
+            <code>scan</code> then try again. For upgrade of something that is installed but current,
+            <code>upgrade &lt;id&gt; --auto</code> prints “already up to date” instead of this error.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg list
+lpkg scan
+lpkg which firefox
+lpkg install firefox</code></pre>
+          </div>
+        </article>
+
+        <article class="err-entry">
+          <h3>dpkg lock / sudo … failed / another package manager may be running</h3>
+          <p class="fix">What it means: apt/dpkg is busy, or elevated install/upgrade was denied.</p>
+          <p>
+            Wait for Software Updater / <code>apt</code> / another <code>lpkg</code> upgrade to finish.
+            Doctor warns when <code>/var/lib/dpkg/lock-frontend</code> exists. Do not delete locks while a process is running.
+            Re-run with a free lock and working sudo.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg doctor
+# wait, then:
+sudo lsof /var/lib/dpkg/lock-frontend
+lpkg upgrade --dry-run
+lpkg upgrade</code></pre>
+          </div>
+        </article>
+
+        <article class="err-entry">
+          <h3>manifest not found / failed to read …</h3>
+          <p class="fix">What it means: <code>install --all</code> or <code>import</code> could not open the JSON file.</p>
+          <p>
+            Default path for <code>--all</code> is <code>packages.json</code> in the current directory.
+            Pass an absolute or relative path, or export a fresh manifest first.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg export -o packages.json
+lpkg install --all ./packages.json
+lpkg import ./packages.json --dry-run</code></pre>
+          </div>
+        </article>
+
+        <article class="err-entry">
+          <h3>failed to parse config at ~/.config/lpkg/config.toml</h3>
+          <p class="fix">What it means: the TOML is invalid (typo, bad quotes, truncated edit).</p>
+          <p>
+            Fix the syntax or move the file aside so lpkg recreates defaults on the next run.
+            If every backend was somehow disabled, newer builds also reset backends to defaults automatically.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>mv ~/.config/lpkg/config.toml ~/.config/lpkg/config.toml.bak
+lpkg doctor
+# then re-edit ~/.config/lpkg/config.toml</code></pre>
+          </div>
+        </article>
+
+        <article class="err-entry">
+          <h3>--version cannot be used with --all / multiple packages</h3>
+          <p class="fix">What it means: version pinning is only allowed for a single package id.</p>
+          <p>
+            Install one package with <code>--version</code>, or install many without it and let each backend pick “latest”.
+            Do not combine package ids with <code>--all</code>.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg install ripgrep --version 14.1.0
+lpkg install firefox code
+lpkg install --all packages.json</code></pre>
+          </div>
+        </article>
+
+        <article class="err-entry">
+          <h3>Duplicates or partial upgrade failures</h3>
+          <p class="fix">What it means: the same app exists on more than one backend, or one backend failed mid-upgrade.</p>
+          <p>
+            List duplicates and uninstall the copy you do not want. During <code>upgrade --all</code> or outdated upgrades,
+            a single backend failure is often printed as a warning while others continue fix that backend (network, lock, auth) and re-run.
+          </p>
+          <div class="codeblock">
+            <button type="button" class="copy" data-copy>Copy</button>
+            <pre><code>lpkg list --duplicates
+lpkg uninstall firefox --source snap
+lpkg upgrade --dry-run
+lpkg upgrade</code></pre>
+          </div>
+        </article>
+
+        <div class="callout">
+          <p>
+            Still stuck? Capture <code>lpkg doctor</code> output and the exact command you ran, then open an issue on
+            <a href="https://github.com/MatoloJr/lpkg">github.com/MatoloJr/lpkg</a>.
+          </p>
+        </div>
       </div>
     </section>
 
