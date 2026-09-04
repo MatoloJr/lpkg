@@ -22,7 +22,7 @@ pub struct DirectDebBackend {
 
 impl DirectDebBackend {
     pub fn new() -> Self {
-        let index_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/direct-deb-index.json");
+        let index_path = crate::config::direct_deb_index_path();
         let index = if index_path.exists() {
             let content = fs::read_to_string(&index_path).unwrap_or_default();
             serde_json::from_str(&content).unwrap_or_default()

@@ -116,15 +116,51 @@ pub fn registry_path() -> Result<PathBuf> {
     Ok(data_dir()?.join("registry.db"))
 }
 
-pub fn aliases_path() -> PathBuf {
-    // Prefer user override, fall back to bundled data
+/// Resolve a bundled data file: user config override, then system share, then build-time data/.
+pub fn bundled_data_file(name: &str) -> PathBuf {
     if let Ok(dirs) = project_dirs() {
-        let user_aliases = dirs.config_dir().join("aliases.toml");
-        if user_aliases.exists() {
-            return user_aliases;
+        let user = dirs.config_dir().join(name);
+        if user.exists() {
+            return user;
+        }
+        let user_data = dirs.data_dir().join(name);
+        if user_data.exists() {
+            return user_data;
         }
     }
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/aliases.toml")
+
+    for prefix in ["/usr/local/share/lpkg", "/usr/share/lpkg"] {
+        let path = PathBuf::from(prefix).join(name);
+        if path.exists() {
+            return path;
+        }
+    }
+
+    // Dev / cargo install from source tree
+    let cargo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data").join(name);
+    if cargo.exists() {
+        return cargo;
+    }
+
+    // Last resort: beside the running binary's ../share/lpkg/
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(prefix) = exe.parent().and_then(|p| p.parent()) {
+            let path = prefix.join("share/lpkg").join(name);
+            if path.exists() {
+                return path;
+            }
+        }
+    }
+
+    cargo
+}
+
+pub fn aliases_path() -> PathBuf {
+    bundled_data_file("aliases.toml")
+}
+
+pub fn direct_deb_index_path() -> PathBuf {
+    bundled_data_file("direct-deb-index.json")
 }
 
 pub fn load_config() -> Result<Config> {
