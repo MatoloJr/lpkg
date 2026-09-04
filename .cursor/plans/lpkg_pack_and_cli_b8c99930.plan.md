@@ -13,16 +13,16 @@ todos:
     status: completed
   - id: packaging
     content: Makefile, install.sh, build-deb.sh, system data paths, bump to 0.2.0
-    status: in_progress
+    status: completed
   - id: ci-release
     content: GitHub Actions release workflow for tag v*
-    status: pending
+    status: completed
   - id: docs
     content: Update README with install methods and full command reference
-    status: pending
+    status: completed
   - id: tag-release
     content: Tag v0.2.0 and create GitHub release with binary + deb (after user approves commit/push)
-    status: pending
+    status: in_progress
 isProject: false
 ---
 

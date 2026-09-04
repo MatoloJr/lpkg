@@ -5,7 +5,8 @@ use std::path::PathBuf;
 #[command(
     name = "lpkg",
     about = "A winget-like package orchestrator for Ubuntu/Debian Linux",
-    version
+    version = env!("CARGO_PKG_VERSION"),
+    arg_required_else_help = true
 )]
 pub struct Cli {
     #[command(subcommand)]
