@@ -2,7 +2,11 @@ use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
-#[command(name = "lpkg", about = "A winget-like package orchestrator for Ubuntu/Debian Linux")]
+#[command(
+    name = "lpkg",
+    about = "A winget-like package orchestrator for Ubuntu/Debian Linux",
+    version
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
@@ -10,19 +14,29 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Search for packages across all backends
+    /// Search for packages across all enabled backends
     Search {
-        query: String,
+        /// One or more search terms (searches all backends for each)
+        #[arg(required = true, num_args = 1..)]
+        queries: Vec<String>,
         #[arg(long, value_delimiter = ',')]
         source: Option<Vec<String>>,
     },
-    /// Install a package
+    /// Install package(s) via the best matching backend
     Install {
-        id: String,
+        /// Package id(s) to install
+        #[arg(num_args = 0..)]
+        ids: Vec<String>,
+        /// Install every package from a JSON manifest (default: packages.json)
+        #[arg(long, num_args = 0..=1, default_missing_value = "packages.json")]
+        all: Option<PathBuf>,
         #[arg(long)]
         source: Option<String>,
         #[arg(long)]
         version: Option<String>,
+        /// Remove any existing install of the same package before installing
+        #[arg(short = 'a', long)]
+        auto: bool,
     },
     /// List installed packages
     List {
@@ -39,9 +53,14 @@ pub enum Commands {
     },
     /// Upgrade packages
     Upgrade {
+        /// Package id to upgrade (omit to upgrade all outdated)
         id: Option<String>,
+        /// Run each backend's full upgrade_all
         #[arg(long)]
         all: bool,
+        /// Upgrade only outdated packages / skip if already current
+        #[arg(short = 'a', long)]
+        auto: bool,
         #[arg(long)]
         dry_run: bool,
         #[arg(long)]
@@ -59,6 +78,14 @@ pub enum Commands {
     Cleanup {
         #[arg(long, value_delimiter = ',')]
         source: Option<Vec<String>>,
+    },
+    /// Show installed copies and search candidates for a package
+    Info {
+        id: String,
+    },
+    /// Show which backend(s) provide an installed package
+    Which {
+        id: String,
     },
     /// Refresh inventory cache
     Scan,
