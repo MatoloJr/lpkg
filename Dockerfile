@@ -5,7 +5,6 @@ WORKDIR /src
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 COPY data ./data
-COPY tests ./tests
 RUN cargo build --release
 
 FROM debian:bookworm-slim
