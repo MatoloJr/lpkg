@@ -9,7 +9,7 @@ todos:
     content: Add --auto/-a to install (replace) and upgrade (outdated-only / bare upgrade)
     status: completed
   - id: cli-info-which-version
-    content: Add info, which, and clap --version
+    content: Add info, which and clap --version
     status: completed
   - id: packaging
     content: Makefile, install.sh, build-deb.sh, system data paths, bump to 0.2.0
@@ -30,8 +30,8 @@ isProject: false
 
 ## Goals
 
-- Make `lpkg` installable via **clone + make**, **one-liner install script**, **`.deb`**, and **`cargo install`**.
-- Extend CLI: multi-id search/install, bulk `install --all`, and `--auto` on install/upgrade.
+- Make `lpkg` installable via **clone + make**, **one-liner install script**, **`.deb`** and **`cargo install`**.
+- Extend CLI: multi-id search/install, bulk `install --all` and `--auto` on install/upgrade.
 - Document every command (existing + new) in [README.md](README.md).
 - Bump to **0.2.0**, tag `v0.2.0`, publish a GitHub release with artifacts.
 
@@ -42,15 +42,15 @@ isProject: false
 In [`src/cli/mod.rs`](src/cli/mod.rs) / [`src/main.rs`](src/main.rs):
 
 - Change `query: String` → `queries: Vec<String>` (one or more terms).
-- `lpkg search firefox` — search all enabled backends for that term (existing behavior; document as C).
-- `lpkg search firefox code` — run search for each term, merge/dedupe candidates.
-- Empty `lpkg search` — error with usage hint (listing every package across apt/flathub/etc. is not useful); keep `--source` filter.
+- `lpkg search firefox` search all enabled backends for that term (existing behavior; document as C).
+- `lpkg search firefox code` run search for each term, merge/dedupe candidates.
+- Empty `lpkg search` error with usage hint (listing every package across apt/flathub/etc. is not useful); keep `--source` filter.
 
 ### Install (A + B + C)
 
 - Change `id: String` → `ids: Vec<String>` so `lpkg install firefox code` installs each in order.
 - Add `--all` + optional manifest path (default: look for `packages.json` in cwd, else fail with a clear message): installs every entry via existing import/install path (reuse logic from `cmd_import`).
-- Keep `--source` / `--version` applying per install when a single id is used; with multiple ids, `--version` is rejected (or ignored with a warning) — **reject with error** for clarity.
+- Keep `--source` / `--version` applying per install when a single id is used; with multiple ids, `--version` is rejected (or ignored with a warning) **reject with error** for clarity.
 - Document that without `--source`, resolver picks the best backend by `backend_priority` across all enabled backends (C).
 
 ### `--auto` (full item 2)
@@ -59,7 +59,7 @@ Clap long flag `--auto` (also accept short `-a`). User wrote `-auto`; we documen
 
 **`lpkg install … --auto`**
 
-- Before install, if the package is already installed (same canonical id, optionally same `--source`), uninstall it first (non-purge unless `--purge` is also passed later — do **not** add purge to install; use normal uninstall).
+- Before install, if the package is already installed (same canonical id, optionally same `--source`), uninstall it first (non-purge unless `--purge` is also passed later do **not** add purge to install; use normal uninstall).
 - Then install the new version. Record registry update as today.
 
 **`lpkg upgrade --auto` / `lpkg upgrade` with no id**
@@ -82,9 +82,9 @@ Concrete upgrade matrix:
 
 Implement these small, high-value additions:
 
-- **`lpkg info <id>`** — show installed copies + search candidates for one id (name, backends, versions, outdated). Helps before `--auto` reinstall.
-- **`lpkg which <id>`** — print which backend(s) currently provide an installed package.
-- **`lpkg version` / `--version`** — show lpkg version from Cargo (`clap` `version` from crate).
+- **`lpkg info <id>`** show installed copies + search candidates for one id (name, backends, versions, outdated). Helps before `--auto` reinstall.
+- **`lpkg which <id>`** print which backend(s) currently provide an installed package.
+- **`lpkg version` / `--version`** show lpkg version from Cargo (`clap` `version` from crate).
 
 Defer (document as possible future, do not implement now): `lpkg history`, `lpkg sources`, interactive TUI.
 
@@ -94,15 +94,15 @@ Repo today only has a stub [`packaging/deb/control`](packaging/deb/control), REA
 
 Add:
 
-1. **[`Makefile`](Makefile)** — targets: `build` (`cargo build --release`), `install` (copy binary + `data/` into `/usr/local` or `PREFIX`), `uninstall`, `deb` (invoke packaging script).
-2. **[`scripts/install.sh`](scripts/install.sh)** — one-liner friendly: detect arch, download latest GitHub release binary **or** build from source if `cargo` present; install to `/usr/local/bin/lpkg` and ship `data/` to `/usr/local/share/lpkg/` (or XDG). Update config/data path loading in [`src/config.rs`](src/config.rs) to also look at system share path for bundled `aliases.toml` / `direct-deb-index.json`.
-3. **[`scripts/build-deb.sh`](scripts/build-deb.sh)** — build release binary, stage `DEBIAN/control` from [`packaging/deb/control`](packaging/deb/control) (bump Version to 0.2.0), install binary + data files, run `dpkg-deb --build`.
+1. **[`Makefile`](Makefile)** targets: `build` (`cargo build --release`), `install` (copy binary + `data/` into `/usr/local` or `PREFIX`), `uninstall`, `deb` (invoke packaging script).
+2. **[`scripts/install.sh`](scripts/install.sh)** one-liner friendly: detect arch, download latest GitHub release binary **or** build from source if `cargo` present; install to `/usr/local/bin/lpkg` and ship `data/` to `/usr/local/share/lpkg/` (or XDG). Update config/data path loading in [`src/config.rs`](src/config.rs) to also look at system share path for bundled `aliases.toml` / `direct-deb-index.json`.
+3. **[`scripts/build-deb.sh`](scripts/build-deb.sh)** build release binary, stage `DEBIAN/control` from [`packaging/deb/control`](packaging/deb/control) (bump Version to 0.2.0), install binary + data files, run `dpkg-deb --build`.
 4. **Clone install** (documented):
    ```bash
    git clone https://github.com/MatoloJr/lpkg.git && cd lpkg && make install
    ```
 5. **Cargo**: set `repository` / `homepage` in [`Cargo.toml`](Cargo.toml); users can `cargo install --git https://github.com/MatoloJr/lpkg.git`.
-6. **GitHub Actions** [`.github/workflows/release.yml`](.github/workflows/release.yml) — on tag `v*`: build release binary (linux amd64), build `.deb`, upload assets via `gh`/`softprops/action-gh-release`.
+6. **GitHub Actions** [`.github/workflows/release.yml`](.github/workflows/release.yml) on tag `v*`: build release binary (linux amd64), build `.deb`, upload assets via `gh`/`softprops/action-gh-release`.
 
 Bump version everywhere to **0.2.0**: [`Cargo.toml`](Cargo.toml), [`packaging/deb/control`](packaging/deb/control), lockfile via `cargo build`.
 
@@ -150,10 +150,10 @@ flowchart LR
   InstallSh[scripts/install.sh] --> ReleaseAssets[GitHub Release]
 ```
 
-- [`src/cli/mod.rs`](src/cli/mod.rs) — new flags/args/subcommands
-- [`src/main.rs`](src/main.rs) — `cmd_install`/`cmd_search`/`cmd_upgrade` loops + `--auto`; new `cmd_info` / `cmd_which`
-- [`src/config.rs`](src/config.rs) — system data path fallback for packaged installs
-- [`Cargo.toml`](Cargo.toml) — version 0.2.0 + metadata
+- [`src/cli/mod.rs`](src/cli/mod.rs) new flags/args/subcommands
+- [`src/main.rs`](src/main.rs) `cmd_install`/`cmd_search`/`cmd_upgrade` loops + `--auto`; new `cmd_info` / `cmd_which`
+- [`src/config.rs`](src/config.rs) system data path fallback for packaged installs
+- [`Cargo.toml`](Cargo.toml) version 0.2.0 + metadata
 - New: Makefile, scripts, workflow, README
 
 ## Out of scope

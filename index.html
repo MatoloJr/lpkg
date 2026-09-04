@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>lpkg — one CLI for every Linux package source</title>
-  <meta name="description" content="lpkg is a winget-like package orchestrator for Ubuntu and Debian. Search, install, upgrade, and clean across apt, snap, flatpak, brew, pipx, cargo, and more." />
+  <title>lpkg one CLI for every Linux package source</title>
+  <meta name="description" content="lpkg is a winget-like package orchestrator for Ubuntu and Debian. Search, install, upgrade and clean across apt, snap, flatpak, brew, pipx, cargo and more." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
@@ -460,7 +460,7 @@
       <p class="hero-mark" aria-hidden="true">lpkg</p>
       <h1>One CLI for every Linux package source</h1>
       <p class="hero-lead">
-        A winget-like orchestrator for Ubuntu and Debian — search, install, upgrade, and clean across apt, snap, flatpak, brew, pipx, cargo, AppImage, and vendor debs.
+        A winget-like orchestrator for Ubuntu and Debian search, install, upgrade and clean across apt, snap, flatpak, brew, pipx, cargo, AppImage and vendor debs.
       </p>
       <div class="cta">
         <a class="btn btn-primary" href="#install">Install</a>
@@ -484,13 +484,13 @@
         <p class="eyebrow">Purpose</p>
         <h2>What this tool is for</h2>
         <p>
-          Linux desktops rarely use a single store. Apps arrive through <strong>apt</strong>, snaps, Flatpaks, Homebrew bottles, pipx tools, Rust crates, AppImages, and vendor <code>.deb</code> downloads — each with its own search, install, and upgrade story.
+          Linux desktops rarely use a single store. Apps arrive through <strong>apt</strong>, snaps, Flatpaks, Homebrew bottles, pipx tools, Rust crates, AppImages and vendor <code>.deb</code> downloads each with its own search, install and upgrade story.
         </p>
         <p>
-          <strong>lpkg</strong> sits above those managers. You ask once; it searches enabled backends, picks the best source by your priority list, installs, tracks provenance in a local registry, and helps you upgrade, pin, export, or clean up without juggling five CLIs.
+          <strong>lpkg</strong> sits above those managers. You ask once; it searches enabled backends, picks the best source by your priority list, installs, tracks provenance in a local registry and helps you upgrade, pin, export, or clean up without juggling five CLIs.
         </p>
         <p>
-          It does not replace apt or Flatpak — it orchestrates them so day-to-day package work feels consistent on Ubuntu and Debian-based systems.
+          It does not replace apt or Flatpak it orchestrates them so day-to-day package work feels consistent on Ubuntu and Debian-based systems.
         </p>
       </div>
     </section>
@@ -537,10 +537,10 @@ sudo dpkg -i dist/lpkg_0.2.0_amd64.deb</code></pre>
         <p class="eyebrow">Configuration</p>
         <h2>How to customize lpkg</h2>
         <p>
-          Behavior is driven by a user config file, optional alias maps, install layout, and JSON manifests — so you can tune backends without rebuilding.
+          Behavior is driven by a user config file, optional alias maps, install layout and JSON manifests so you can tune backends without rebuilding.
         </p>
 
-        <h3>Main config — <code>~/.config/lpkg/config.toml</code></h3>
+        <h3>Main config <code>~/.config/lpkg/config.toml</code></h3>
         <p>Created on first run with sensible defaults. Edit it to change resolution order and which backends are active.</p>
         <div class="codeblock">
           <button type="button" class="copy" data-copy>Copy</button>
@@ -562,14 +562,14 @@ direct_deb = true
 # appimage_paths = ["~/Applications", "~/.local/bin"]</code></pre>
         </div>
         <ul>
-          <li><strong>backend_priority</strong> — order used when <code>lpkg install</code> has no <code>--source</code>. First match wins.</li>
-          <li><strong>[backends]</strong> — set a backend to <code>false</code> to skip it in search/install/upgrade.</li>
-          <li><strong>apps_only</strong> — prefer application-like packages when listing (backends that support the distinction).</li>
-          <li><strong>appimage_paths</strong> — directories scanned for portable AppImages.</li>
-          <li><strong>cache_ttl_hours</strong> — how long inventory scan cache is considered fresh.</li>
+          <li><strong>backend_priority</strong> order used when <code>lpkg install</code> has no <code>--source</code>. First match wins.</li>
+          <li><strong>[backends]</strong> set a backend to <code>false</code> to skip it in search/install/upgrade.</li>
+          <li><strong>apps_only</strong> prefer application-like packages when listing (backends that support the distinction).</li>
+          <li><strong>appimage_paths</strong> directories scanned for portable AppImages.</li>
+          <li><strong>cache_ttl_hours</strong> how long inventory scan cache is considered fresh.</li>
         </ul>
 
-        <h3>Aliases — cross-backend identity</h3>
+        <h3>Aliases cross-backend identity</h3>
         <p>
           Packaged aliases live under <code>/usr/local/share/lpkg/aliases.toml</code> (or <code>/usr/share/lpkg/</code>).
           Drop a personal file at <code>~/.config/lpkg/aliases.toml</code> to override and map one canonical name (e.g. <code>firefox</code>) to backend-specific IDs.
@@ -584,7 +584,7 @@ direct_deb = true
 # data   → $PREFIX/share/lpkg/</code></pre>
         </div>
 
-        <h3>Manifests — reproducible machine setup</h3>
+        <h3>Manifests reproducible machine setup</h3>
         <p>Export your inventory, edit the JSON, then reinstall elsewhere with <code>import</code> or <code>install --all</code>.</p>
         <div class="codeblock">
           <button type="button" class="copy" data-copy>Copy</button>
@@ -663,7 +663,7 @@ lpkg uninstall code --source apt</code></pre>
         <span class="split-label tool">The lpkg tool</span>
         <h3>Remove lpkg from your system</h3>
         <p>
-          How you installed determines how you uninstall. <code>make uninstall</code> only deletes the binary and shared data under your install prefix — it does <strong>not</strong> remove user config or the registry.
+          How you installed determines how you uninstall. <code>make uninstall</code> only deletes the binary and shared data under your install prefix it does <strong>not</strong> remove user config or the registry.
         </p>
 
         <h3>Installed with clone + make</h3>

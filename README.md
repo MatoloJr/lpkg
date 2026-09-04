@@ -2,18 +2,18 @@
 
 A winget-like package orchestrator for Ubuntu and Debian-based Linux distributions.
 
-**Web docs:** open [`index.html`](index.html) in a browser (or view it via GitHub Pages if enabled) for a guided overview of purpose, customization, commands, and how to uninstall the tool.
+**Web docs:** open [`index.html`](index.html) in a browser (or view it via GitHub Pages if enabled) for a guided overview of purpose, customization, commands and how to uninstall the tool.
 
 `lpkg` unifies install, upgrade, inventory, cleanup, pinning and export across multiple package managers:
 
-- **apt** — system packages
-- **snap** — Ubuntu snaps
-- **flatpak** — sandboxed apps (Flathub)
-- **brew** — Homebrew on Linux
-- **pipx** — isolated Python CLIs
-- **cargo** — Rust binaries
-- **appimage** — portable AppImages (discovery)
-- **direct_deb** — vendor `.deb` downloads
+- **apt** - system packages
+- **snap** - Ubuntu snaps
+- **flatpak** - sandboxed apps (Flathub)
+- **brew** - Homebrew on Linux
+- **pipx** - isolated Python CLIs
+- **cargo** - Rust binaries
+- **appimage** - portable AppImages (discovery)
+- **direct_deb** - vendor `.deb` downloads
 
 ## Install
 
@@ -73,7 +73,7 @@ After install, verify with `lpkg --version`.
 | `lpkg info <id>` | Show installed copies and search candidates for a package |
 | `lpkg which <id>` | Print which backend(s) currently provide an installed package |
 | `lpkg scan` | Refresh inventory cache |
-| `lpkg doctor` | Health checks for backends, locks, and duplicates |
+| `lpkg doctor` | Health checks for backends, locks and duplicates |
 | `lpkg pin add\|remove\|list` | Pin packages to skip upgrades |
 | `lpkg export -o packages.json` | Export installed packages to a JSON manifest |
 | `lpkg import packages.json` | Install from a manifest (`--dry-run` to preview) |
