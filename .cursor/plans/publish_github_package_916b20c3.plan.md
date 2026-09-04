@@ -1,6 +1,6 @@
 ---
 name: Publish GitHub Package
-overview: Populate the repo’s GitHub Packages sidebar by publishing an lpkg container image to GHCR (ghcr.io), linked to MatoloJr/lpkg — Releases alone do not fill that Packages panel.
+overview: Populate the repo’s GitHub Packages sidebar by publishing an lpkg container image to GHCR (ghcr.io), linked to MatoloJr/lpkg Releases alone do not fill that Packages panel.
 todos:
   - id: dockerfile
     content: Add multi-stage Dockerfile with OCI source label for MatoloJr/lpkg
@@ -12,7 +12,7 @@ todos:
     content: Document GHCR pull + Packages vs Releases in README (and brief index.html note)
     status: pending
   - id: publish-tag
-    content: Bump to 0.2.1, tag, and publish so Packages sidebar populates; set package public if needed
+    content: Bump to 0.2.1, tag and publish so Packages sidebar populates; set package public if needed
     status: pending
 isProject: false
 ---
@@ -25,7 +25,7 @@ The repo sidebar **Packages** panel is **GitHub Packages**, not **Releases**.
 
 | GitHub UI | What you already have / need |
 |---|---|
-| **Releases** | You already published `v0.2.0` (binary, tarball, `.deb`) — that does **not** fill Packages |
+| **Releases** | You already published `v0.2.0` (binary, tarball, `.deb`) that does **not** fill Packages |
 | **Packages** | Needs a package in a supported registry: usually **Container (GHCR)**, npm, NuGet, Maven, RubyGems |
 
 `lpkg` is a Rust CLI. Cargo publishes to [crates.io](https://crates.io), which also does **not** appear under the repo Packages sidebar. The standard way to make this tool show there is to publish a **Docker/OCI image** to **GitHub Container Registry** (`ghcr.io`).
@@ -46,7 +46,7 @@ Publish image `ghcr.io/matolojr/lpkg` (lowercase namespace required by GHCR) on 
 
 Multi-stage build:
 
-- Stage 1: `rust:1-bookworm` — `cargo build --release`
+- Stage 1: `rust:1-bookworm` `cargo build --release`
 - Stage 2: slim runtime (`debian:bookworm-slim`) with binary + `data/` under `/usr/local`
 - Labels:
   - `org.opencontainers.image.source=https://github.com/MatoloJr/lpkg`
@@ -93,7 +93,7 @@ Clarify: **Releases** = native Linux binaries/deb; **Packages** = container on G
 
 - After merging the Dockerfile + workflow changes to `main`, either:
   - Re-run by cutting a new tag (e.g. `v0.2.1`), or
-  - Manually dispatch / re-run is not enough without a tag if the workflow only runs on `v*` — **retag or bump to `v0.2.1`** and push the tag so the updated workflow runs and pushes to GHCR.
+  - Manually dispatch / re-run is not enough without a tag if the workflow only runs on `v*` **retag or bump to `v0.2.1`** and push the tag so the updated workflow runs and pushes to GHCR.
 
 Default: bump patch to **0.2.1**, tag `v0.2.1`, so Packages gets a clean first publish without overloading the existing release story.
 
