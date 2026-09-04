@@ -543,6 +543,18 @@
         <p class="eyebrow">Get started</p>
         <h2>Install lpkg</h2>
         <p>Pick one path. After install, confirm with <code>lpkg --version</code>.</p>
+        <p>
+          <strong>GitHub Releases</strong> ship native binaries and <code>.deb</code> files.
+          The repo <strong>Packages</strong> sidebar lists the <strong>GHCR container</strong>
+          (<code>ghcr.io/matolojr/lpkg</code>).
+        </p>
+
+        <h3>Container (GitHub Packages)</h3>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>docker pull ghcr.io/matolojr/lpkg:latest
+docker run --rm ghcr.io/matolojr/lpkg:latest --version</code></pre>
+        </div>
 
         <h3>One-liner</h3>
         <p>Downloads the latest GitHub release binary, or builds from source if a release asset is unavailable.</p>
@@ -564,7 +576,7 @@ sudo make install</code></pre>
         <div class="codeblock">
           <button type="button" class="copy" data-copy>Copy</button>
           <pre><code>make deb
-sudo dpkg -i dist/lpkg_0.2.0_amd64.deb</code></pre>
+sudo dpkg -i dist/lpkg_0.2.1_amd64.deb</code></pre>
         </div>
 
         <h3>Cargo</h3>
@@ -919,7 +931,7 @@ lpkg completions zsh > ~/.zfunc/_lpkg</code></pre>
           <h3>lpkg --version</h3>
           <p class="use">Use case: confirm which lpkg build is on your <code>PATH</code>.</p>
           <p>
-            Prints the crate version (currently <strong>0.2.0</strong>). Also available as <code>-V</code>.
+            Prints the crate version (currently <strong>0.2.1</strong>). Also available as <code>-V</code>.
             Use after install, upgrade of the tool, or when reporting bugs.
           </p>
           <div class="codeblock">
@@ -1164,7 +1176,7 @@ sudo rm -rf /usr/local/share/lpkg</code></pre>
 
   <footer>
     <div class="wrap">
-      <span>lpkg 0.2.0 · MIT License</span>
+      <span>lpkg 0.2.1 · MIT License</span>
       <a href="https://github.com/MatoloJr/lpkg">github.com/MatoloJr/lpkg</a>
     </div>
   </footer>

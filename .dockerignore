@@ -1,0 +1,12 @@
+target
+.git
+.github
+dist
+.cursor
+*.md
+!README.md
+index.html
+favicon.png
+packaging
+scripts
+tests

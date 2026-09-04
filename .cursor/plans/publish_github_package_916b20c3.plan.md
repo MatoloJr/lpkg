@@ -4,16 +4,16 @@ overview: Populate the repo’s GitHub Packages sidebar by publishing an lpkg co
 todos:
   - id: dockerfile
     content: Add multi-stage Dockerfile with OCI source label for MatoloJr/lpkg
-    status: pending
+    status: completed
   - id: workflow-ghcr
     content: Extend release.yml to build/push ghcr.io/matolojr/lpkg with packages:write
-    status: pending
+    status: completed
   - id: docs-packages
     content: Document GHCR pull + Packages vs Releases in README (and brief index.html note)
-    status: pending
+    status: completed
   - id: publish-tag
     content: Bump to 0.2.1, tag and publish so Packages sidebar populates; set package public if needed
-    status: pending
+    status: in_progress
 isProject: false
 ---
 

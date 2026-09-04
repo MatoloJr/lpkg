@@ -17,6 +17,17 @@ A winget-like package orchestrator for Ubuntu and Debian-based Linux distributio
 
 ## Install
 
+Native binaries and `.deb` files ship as **GitHub Releases**. The **Packages** sidebar lists the **container image** on GitHub Container Registry (GHCR).
+
+### Container (GitHub Packages / GHCR)
+
+```bash
+docker pull ghcr.io/matolojr/lpkg:latest
+docker run --rm ghcr.io/matolojr/lpkg:latest --version
+```
+
+Image: `ghcr.io/matolojr/lpkg` (also tagged with the semver, e.g. `0.2.1`).
+
 ### One-liner (release binary, falls back to source build)
 
 ```bash
@@ -38,7 +49,7 @@ Uses `PREFIX=/usr/local` by default (`BINDIR`, `DATADIR` overridable).
 ```bash
 # from a release asset, or build locally:
 make deb
-sudo dpkg -i dist/lpkg_0.2.0_amd64.deb
+sudo dpkg -i dist/lpkg_0.2.1_amd64.deb
 ```
 
 ### Cargo
