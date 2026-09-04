@@ -653,10 +653,10 @@ lpkg install --all my-packages.json</code></pre>
           <p>
             Queries <strong>all enabled backends</strong> for each term you pass, then merges and dedupes candidates
             (same backend + id appears once). Pass multiple terms in one call when you are shopping for several apps.
-            Empty search is rejected — listing every package on apt/Flathub is not useful.
+            Empty search is rejected, listing every package on apt/Flathub is not useful.
           </p>
           <ul class="flags">
-            <li><code>--source apt,flatpak</code> — limit search to listed backends (comma-separated).</li>
+            <li><code>--source apt,flatpak</code> - limit search to listed backends (comma-separated).</li>
           </ul>
           <div class="codeblock">
             <button type="button" class="copy" data-copy>Copy</button>
@@ -675,10 +675,10 @@ lpkg search neovim --source apt,brew</code></pre>
             Records the install in the local registry afterward.
           </p>
           <ul class="flags">
-            <li><code>--source &lt;backend&gt;</code> — force a backend (e.g. <code>flatpak</code>, <code>apt</code>).</li>
-            <li><code>--version &lt;ver&gt;</code> — pin a version when installing a <strong>single</strong> id (error if used with multiple ids).</li>
-            <li><code>--all [file]</code> — bulk-install from a JSON manifest (default file: <code>packages.json</code> in the current directory).</li>
-            <li><code>-a</code> / <code>--auto</code> — if the package is already installed, uninstall the old copy first, then install (replace / reinstall).</li>
+            <li><code>--source &lt;backend&gt;</code> - force a backend (e.g. <code>flatpak</code>, <code>apt</code>).</li>
+            <li><code>--version &lt;ver&gt;</code> - pin a version when installing a <strong>single</strong> id (error if used with multiple ids).</li>
+            <li><code>--all [file]</code> - bulk-install from a JSON manifest (default file: <code>packages.json</code> in the current directory).</li>
+            <li><code>-a</code> / <code>--auto</code> - if the package is already installed, uninstall the old copy first, then install (replace / reinstall).</li>
           </ul>
           <div class="codeblock">
             <button type="button" class="copy" data-copy>Copy</button>
@@ -699,11 +699,11 @@ lpkg install --all my-packages.json</code></pre>
             scripting, or cleanup decisions before <code>uninstall</code> / <code>upgrade</code>.
           </p>
           <ul class="flags">
-            <li><code>--outdated</code> — only packages with a known newer version.</li>
-            <li><code>--duplicates</code> — same canonical app installed via more than one backend.</li>
-            <li><code>--all</code> — include non-app packages where backends support that distinction.</li>
-            <li><code>--format table|json</code> — human table (default) or machine-readable JSON.</li>
-            <li><code>--source …</code> — optional backend filter (comma-separated).</li>
+            <li><code>--outdated</code> - only packages with a known newer version.</li>
+            <li><code>--duplicates</code> - same canonical app installed via more than one backend.</li>
+            <li><code>--all</code> - include non-app packages where backends support that distinction.</li>
+            <li><code>--format table|json</code> - human table (default) or machine-readable JSON.</li>
+            <li><code>--source …</code> - optional backend filter (comma-separated).</li>
           </ul>
           <div class="codeblock">
             <button type="button" class="copy" data-copy>Copy</button>
@@ -724,10 +724,10 @@ lpkg list --format json</code></pre>
             upgrades that install; with <code>--auto</code>, it upgrades only if outdated and exits quietly if already current.
           </p>
           <ul class="flags">
-            <li><code>--all</code> — backend <code>upgrade_all</code> for every enabled manager (broader than outdated-only).</li>
-            <li><code>-a</code> / <code>--auto</code> — outdated-only mode when no id; with an id, skip if up to date.</li>
-            <li><code>--dry-run</code> — print what would be upgraded without applying changes.</li>
-            <li><code>--source &lt;backend&gt;</code> — restrict to one backend.</li>
+            <li><code>--all</code> - backend <code>upgrade_all</code> for every enabled manager (broader than outdated-only).</li>
+            <li><code>-a</code> / <code>--auto</code> - outdated-only mode when no id; with an id, skip if up to date.</li>
+            <li><code>--dry-run</code> - print what would be upgraded without applying changes.</li>
+            <li><code>--source &lt;backend&gt;</code> - restrict to one backend.</li>
           </ul>
           <div class="codeblock">
             <button type="button" class="copy" data-copy>Copy</button>
@@ -745,12 +745,12 @@ lpkg upgrade --dry-run</code></pre>
           <p class="use">Use case: remove an application or tool you no longer want, through the right backend.</p>
           <p>
             Finds installed copies matching the id, asks that backend to uninstall and removes the registry entry.
-            This is for <strong>packages managed via lpkg</strong> — not for removing the lpkg binary itself
+            This is for <strong>packages managed via lpkg</strong> - not for removing the lpkg binary itself
             (see <a href="#uninstall">Uninstall</a>).
           </p>
           <ul class="flags">
-            <li><code>--purge</code> — remove config/data where the backend supports purge (notably apt).</li>
-            <li><code>--source &lt;backend&gt;</code> — if duplicates exist, remove only the copy from that backend.</li>
+            <li><code>--purge</code> - remove config/data where the backend supports purge (notably apt).</li>
+            <li><code>--source &lt;backend&gt;</code> - if duplicates exist, remove only the copy from that backend.</li>
           </ul>
           <div class="codeblock">
             <button type="button" class="copy" data-copy>Copy</button>
@@ -762,13 +762,13 @@ lpkg uninstall code --source apt</code></pre>
 
         <article class="cmd-entry" id="cmd-cleanup">
           <h3>lpkg cleanup [--source …]</h3>
-          <p class="use">Use case: reclaim disk after upgrades — old snap revisions, unused Flatpak runtimes, caches, etc.</p>
+          <p class="use">Use case: reclaim disk after upgrades - old snap revisions, unused Flatpak runtimes, caches, etc.</p>
           <p>
             Runs each enabled backend’s cleanup routine and prints a short freed/status report per backend.
             Safe maintenance after large upgrade sessions.
           </p>
           <ul class="flags">
-            <li><code>--source snap,flatpak</code> — clean only listed backends.</li>
+            <li><code>--source snap,flatpak</code> - clean only listed backends.</li>
           </ul>
           <div class="codeblock">
             <button type="button" class="copy" data-copy>Copy</button>
@@ -821,7 +821,7 @@ lpkg cleanup --source snap</code></pre>
           <p class="use">Use case: diagnose why search/install fails or the system looks unhealthy.</p>
           <p>
             Checks which backends are available vs enabled, warns about dpkg locks, reports duplicate installations,
-            and summarizes registry tracking. Exits non-zero when issues are found — useful in CI or post-install checks.
+            and summarizes registry tracking. Exits non-zero when issues are found - useful in CI or post-install checks.
           </p>
           <div class="codeblock">
             <button type="button" class="copy" data-copy>Copy</button>
@@ -837,9 +837,9 @@ lpkg cleanup --source snap</code></pre>
             Always pin an <strong>installed</strong> package; use <code>--source</code> when multiple backends provide it.
           </p>
           <ul class="flags">
-            <li><code>pin add &lt;id&gt; [--source …] [--reason "…"]</code> — prevent upgrades; reason is for your notes.</li>
-            <li><code>pin remove &lt;id&gt; [--source …]</code> — allow upgrades again.</li>
-            <li><code>pin list</code> — show pinned packages and reasons.</li>
+            <li><code>pin add &lt;id&gt; [--source …] [--reason "…"]</code> - prevent upgrades; reason is for your notes.</li>
+            <li><code>pin remove &lt;id&gt; [--source …]</code> - allow upgrades again.</li>
+            <li><code>pin list</code> - show pinned packages and reasons.</li>
           </ul>
           <div class="codeblock">
             <button type="button" class="copy" data-copy>Copy</button>
@@ -1026,7 +1026,7 @@ sudo rm -rf /usr/local/share/lpkg</code></pre>
         });
       });
 
-      // Section reveal on scroll
+      // Section reveal on scroll (threshold 0 so tall sections like #commands still reveal)
       var sections = document.querySelectorAll("section.reveal");
       if ("IntersectionObserver" in window) {
         var io = new IntersectionObserver(
@@ -1038,7 +1038,7 @@ sudo rm -rf /usr/local/share/lpkg</code></pre>
               }
             });
           },
-          { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
+          { rootMargin: "0px 0px -40px 0px", threshold: 0 }
         );
         sections.forEach(function (s) { io.observe(s); });
       } else {
