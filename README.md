@@ -2,6 +2,8 @@
 
 A winget-like package orchestrator for Ubuntu and Debian-based Linux distributions.
 
+**Web docs:** open [`index.html`](index.html) in a browser (or view it via GitHub Pages if enabled) for a guided overview of purpose, customization, commands, and how to uninstall the tool.
+
 `lpkg` unifies install, upgrade, inventory, cleanup, pinning and export across multiple package managers:
 
 - **apt** — system packages

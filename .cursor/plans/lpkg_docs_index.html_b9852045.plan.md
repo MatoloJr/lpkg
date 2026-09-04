@@ -4,10 +4,10 @@ overview: Add a single self-contained `index.html` in the repo root as a polishe
 todos:
   - id: write-index-html
     content: "Create root index.html with embedded CSS/JS: hero, purpose, install, customize, commands, uninstall tool"
-    status: pending
+    status: completed
   - id: readme-link
     content: Link index.html from README.md as web docs entry point
-    status: pending
+    status: completed
 isProject: false
 ---
 

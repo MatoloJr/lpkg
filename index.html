@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>lpkg — one CLI for every Linux package source</title>
+  <meta name="description" content="lpkg is a winget-like package orchestrator for Ubuntu and Debian. Search, install, upgrade, and clean across apt, snap, flatpak, brew, pipx, cargo, and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0b1220;
+      --ink-2: #111a2e;
+      --ink-3: #17233a;
+      --mist: #c8d0e0;
+      --paper: #eef2f8;
+      --muted: #8b97ad;
+      --teal: #2dd4bf;
+      --cyan: #67e8f9;
+      --accent: var(--teal);
+      --accent-2: var(--cyan);
+      --danger: #fb7185;
+      --ok: #4ade80;
+      --radius: 10px;
+      --max: 760px;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --font-display: "Syne", system-ui, sans-serif;
+      --font-body: "IBM Plex Sans", system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: var(--paper);
+      background: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent-2); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: var(--accent); }
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .skip {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      background: var(--accent);
+      color: var(--ink);
+      padding: 0.6rem 1rem;
+      z-index: 100;
+      font-weight: 600;
+    }
+    .skip:focus { left: 1rem; top: 1rem; }
+
+    /* Atmospheric mesh */
+    .mesh {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, rgba(45, 212, 191, 0.18), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(103, 232, 249, 0.12), transparent 50%),
+        radial-gradient(ellipse 50% 60% at 50% 100%, rgba(45, 212, 191, 0.08), transparent 55%),
+        linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 40%, var(--ink) 100%);
+    }
+    .mesh::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.35;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+    }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 2.5rem));
+      margin-inline: auto;
+    }
+
+    /* Nav */
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      background: rgba(11, 18, 32, 0.72);
+      border-bottom: 1px solid rgba(200, 208, 224, 0.08);
+    }
+    .topnav-inner {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 0;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.03em;
+      color: var(--paper);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .brand span { color: var(--accent); }
+    .nav-links {
+      display: flex;
+      gap: 0.35rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin-left: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .nav-links::-webkit-scrollbar { display: none; }
+    .nav-links a {
+      flex-shrink: 0;
+      color: var(--mist);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+      position: relative;
+      transition: color 0.25s var(--ease), background 0.25s var(--ease);
+    }
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0.7rem;
+      right: 0.7rem;
+      bottom: 0.25rem;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s var(--ease);
+    }
+    .nav-links a:hover,
+    .nav-links a:focus-visible {
+      color: var(--paper);
+      background: rgba(45, 212, 191, 0.08);
+    }
+    .nav-links a:hover::after,
+    .nav-links a:focus-visible::after {
+      transform: scaleX(1);
+    }
+
+    /* Hero */
+    .hero {
+      min-height: min(100vh, 820px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4.5rem 0 3.5rem;
+      position: relative;
+    }
+    .hero-mark {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(3.4rem, 12vw, 6.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      margin: 0 0 1.25rem;
+      background: linear-gradient(120deg, var(--paper) 20%, var(--accent) 55%, var(--accent-2) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: rise 0.9s var(--ease) 0.1s forwards;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.55rem, 4.2vw, 2.15rem);
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      margin: 0 0 0.9rem;
+      max-width: 18ch;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: rise 0.9s var(--ease) 0.25s forwards;
+    }
+    .hero-lead {
+      margin: 0 0 1.75rem;
+      color: var(--mist);
+      max-width: 38ch;
+      font-size: 1.08rem;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: rise 0.9s var(--ease) 0.4s forwards;
+    }
+    .cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: rise 0.9s var(--ease) 0.55s forwards;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.7rem 1.15rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.25s var(--ease), background 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease);
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: linear-gradient(120deg, var(--teal), var(--cyan));
+      color: var(--ink);
+    }
+    .btn-primary:hover { color: var(--ink); filter: brightness(1.05); }
+    .btn-ghost {
+      background: transparent;
+      border-color: rgba(200, 208, 224, 0.22);
+      color: var(--paper);
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Sections */
+    section {
+      padding: 3.25rem 0;
+      border-top: 1px solid rgba(200, 208, 224, 0.08);
+    }
+    section.reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+    section.reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .eyebrow {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 0.65rem;
+    }
+    h2 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.55rem, 3.5vw, 1.9rem);
+      letter-spacing: -0.03em;
+      margin: 0 0 1rem;
+      line-height: 1.2;
+    }
+    h3 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1.15rem;
+      margin: 1.75rem 0 0.55rem;
+      letter-spacing: -0.02em;
+    }
+    p { margin: 0 0 1rem; color: var(--mist); }
+    p strong, li strong { color: var(--paper); font-weight: 600; }
+    ul { margin: 0 0 1rem; padding-left: 1.2rem; color: var(--mist); }
+    li { margin-bottom: 0.4rem; }
+    .backends {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin: 1.1rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .backends li {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      background: rgba(45, 212, 191, 0.1);
+      border: 1px solid rgba(45, 212, 191, 0.22);
+      color: var(--accent-2);
+    }
+
+    /* Code blocks */
+    .codeblock {
+      position: relative;
+      margin: 0.85rem 0 1.35rem;
+      background: var(--ink-3);
+      border: 1px solid rgba(200, 208, 224, 0.1);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .codeblock pre {
+      margin: 0;
+      padding: 1rem 1.1rem;
+      padding-right: 4.5rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      line-height: 1.55;
+      color: var(--paper);
+    }
+    .codeblock .copy {
+      position: absolute;
+      top: 0.55rem;
+      right: 0.55rem;
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      border: 1px solid rgba(200, 208, 224, 0.18);
+      background: rgba(11, 18, 32, 0.85);
+      color: var(--mist);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .codeblock .copy:hover {
+      color: var(--paper);
+      border-color: var(--accent);
+    }
+    .codeblock .copy.copied {
+      color: var(--ink);
+      background: var(--ok);
+      border-color: var(--ok);
+    }
+
+    .cmd-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .cmd-table th,
+    .cmd-table td {
+      text-align: left;
+      padding: 0.65rem 0.5rem;
+      border-bottom: 1px solid rgba(200, 208, 224, 0.1);
+      vertical-align: top;
+    }
+    .cmd-table th {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .cmd-table code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--accent-2);
+      white-space: nowrap;
+    }
+    .cmd-table td:last-child { color: var(--mist); }
+
+    .callout {
+      margin: 1.25rem 0;
+      padding: 1rem 1.15rem;
+      border-radius: var(--radius);
+      border-left: 3px solid var(--accent);
+      background: rgba(45, 212, 191, 0.07);
+    }
+    .callout.warn {
+      border-left-color: var(--danger);
+      background: rgba(251, 113, 133, 0.08);
+    }
+    .callout p:last-child { margin-bottom: 0; }
+
+    .split-label {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.55rem;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+    .split-label.pkg {
+      background: rgba(103, 232, 249, 0.15);
+      color: var(--accent-2);
+    }
+    .split-label.tool {
+      background: rgba(251, 113, 133, 0.15);
+      color: var(--danger);
+    }
+
+    footer {
+      padding: 2.5rem 0 3.5rem;
+      border-top: 1px solid rgba(200, 208, 224, 0.08);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    footer .wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      justify-content: space-between;
+      align-items: center;
+    }
+    footer a { color: var(--mist); }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 560px) {
+      .wrap { width: min(var(--max), calc(100% - 1.5rem)); }
+      .hero { min-height: auto; padding-top: 3rem; }
+      .cmd-table { display: block; }
+      .cmd-table thead { display: none; }
+      .cmd-table tr {
+        display: block;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(200, 208, 224, 0.1);
+      }
+      .cmd-table td {
+        display: block;
+        border: none;
+        padding: 0.15rem 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="mesh" aria-hidden="true"></div>
+
+  <header class="topnav">
+    <div class="wrap topnav-inner">
+      <a class="brand" href="#">l<span>pkg</span></a>
+      <nav class="nav-links" aria-label="Page">
+        <a href="#why">Why</a>
+        <a href="#install">Install</a>
+        <a href="#customize">Customize</a>
+        <a href="#commands">Commands</a>
+        <a href="#uninstall">Uninstall</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero wrap" aria-label="Introduction">
+      <p class="hero-mark" aria-hidden="true">lpkg</p>
+      <h1>One CLI for every Linux package source</h1>
+      <p class="hero-lead">
+        A winget-like orchestrator for Ubuntu and Debian — search, install, upgrade, and clean across apt, snap, flatpak, brew, pipx, cargo, AppImage, and vendor debs.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#install">Install</a>
+        <a class="btn btn-ghost" href="#commands">Commands</a>
+        <a class="btn btn-ghost" href="#uninstall">Uninstall tool</a>
+      </div>
+      <ul class="backends" aria-label="Supported backends">
+        <li>apt</li>
+        <li>snap</li>
+        <li>flatpak</li>
+        <li>brew</li>
+        <li>pipx</li>
+        <li>cargo</li>
+        <li>appimage</li>
+        <li>direct_deb</li>
+      </ul>
+    </section>
+
+    <section id="why" class="reveal">
+      <div class="wrap">
+        <p class="eyebrow">Purpose</p>
+        <h2>What this tool is for</h2>
+        <p>
+          Linux desktops rarely use a single store. Apps arrive through <strong>apt</strong>, snaps, Flatpaks, Homebrew bottles, pipx tools, Rust crates, AppImages, and vendor <code>.deb</code> downloads — each with its own search, install, and upgrade story.
+        </p>
+        <p>
+          <strong>lpkg</strong> sits above those managers. You ask once; it searches enabled backends, picks the best source by your priority list, installs, tracks provenance in a local registry, and helps you upgrade, pin, export, or clean up without juggling five CLIs.
+        </p>
+        <p>
+          It does not replace apt or Flatpak — it orchestrates them so day-to-day package work feels consistent on Ubuntu and Debian-based systems.
+        </p>
+      </div>
+    </section>
+
+    <section id="install" class="reveal">
+      <div class="wrap">
+        <p class="eyebrow">Get started</p>
+        <h2>Install lpkg</h2>
+        <p>Pick one path. After install, confirm with <code>lpkg --version</code>.</p>
+
+        <h3>One-liner</h3>
+        <p>Downloads the latest GitHub release binary, or builds from source if a release asset is unavailable.</p>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>curl -fsSL https://raw.githubusercontent.com/MatoloJr/lpkg/main/scripts/install.sh | bash</code></pre>
+        </div>
+
+        <h3>Clone and make</h3>
+        <p>Default prefix is <code>/usr/local</code>. Override with <code>PREFIX</code>, <code>BINDIR</code>, or <code>DATADIR</code>.</p>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>git clone https://github.com/MatoloJr/lpkg.git
+cd lpkg
+sudo make install</code></pre>
+        </div>
+
+        <h3>Debian package</h3>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>make deb
+sudo dpkg -i dist/lpkg_0.2.0_amd64.deb</code></pre>
+        </div>
+
+        <h3>Cargo</h3>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>cargo install --git https://github.com/MatoloJr/lpkg.git</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="customize" class="reveal">
+      <div class="wrap">
+        <p class="eyebrow">Configuration</p>
+        <h2>How to customize lpkg</h2>
+        <p>
+          Behavior is driven by a user config file, optional alias maps, install layout, and JSON manifests — so you can tune backends without rebuilding.
+        </p>
+
+        <h3>Main config — <code>~/.config/lpkg/config.toml</code></h3>
+        <p>Created on first run with sensible defaults. Edit it to change resolution order and which backends are active.</p>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>backend_priority = ["flatpak", "apt", "snap", "brew", "pipx", "cargo", "direct_deb", "appimage"]
+apps_only = true
+cache_ttl_hours = 24
+
+[backends]
+apt = true
+snap = true
+flatpak = true
+brew = true
+pipx = true
+cargo = true
+appimage = true
+direct_deb = true
+
+# Optional AppImage discovery roots
+# appimage_paths = ["~/Applications", "~/.local/bin"]</code></pre>
+        </div>
+        <ul>
+          <li><strong>backend_priority</strong> — order used when <code>lpkg install</code> has no <code>--source</code>. First match wins.</li>
+          <li><strong>[backends]</strong> — set a backend to <code>false</code> to skip it in search/install/upgrade.</li>
+          <li><strong>apps_only</strong> — prefer application-like packages when listing (backends that support the distinction).</li>
+          <li><strong>appimage_paths</strong> — directories scanned for portable AppImages.</li>
+          <li><strong>cache_ttl_hours</strong> — how long inventory scan cache is considered fresh.</li>
+        </ul>
+
+        <h3>Aliases — cross-backend identity</h3>
+        <p>
+          Packaged aliases live under <code>/usr/local/share/lpkg/aliases.toml</code> (or <code>/usr/share/lpkg/</code>).
+          Drop a personal file at <code>~/.config/lpkg/aliases.toml</code> to override and map one canonical name (e.g. <code>firefox</code>) to backend-specific IDs.
+        </p>
+
+        <h3>Install layout</h3>
+        <p>When installing from source:</p>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>sudo make install PREFIX=/usr/local
+# binary → $PREFIX/bin/lpkg
+# data   → $PREFIX/share/lpkg/</code></pre>
+        </div>
+
+        <h3>Manifests — reproducible machine setup</h3>
+        <p>Export your inventory, edit the JSON, then reinstall elsewhere with <code>import</code> or <code>install --all</code>.</p>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>lpkg export -o packages.json
+lpkg import packages.json --dry-run
+lpkg install --all
+lpkg install --all my-packages.json</code></pre>
+        </div>
+
+        <div class="callout">
+          <p>
+            Install provenance is tracked in <strong>~/.local/share/lpkg/registry.db</strong> (SQLite). That registry is separate from backend package databases and survives tool reinstalls until you delete it.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="commands" class="reveal">
+      <div class="wrap">
+        <p class="eyebrow">CLI</p>
+        <h2>Commands</h2>
+        <p>Search and install hit <strong>all enabled backends</strong> unless you pass <code>--source</code>. Use <code>-a</code> / <code>--auto</code> for replace-on-install and outdated-only upgrades.</p>
+
+        <table class="cmd-table">
+          <thead>
+            <tr><th>Command</th><th>What it does</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>lpkg search &lt;q…&gt;</code></td><td>Search every enabled backend for each query; merge and dedupe</td></tr>
+            <tr><td><code>lpkg install &lt;id…&gt;</code></td><td>Install each id via best backend (or <code>--source</code>)</td></tr>
+            <tr><td><code>lpkg install --all [file]</code></td><td>Install from a JSON manifest (default <code>packages.json</code>)</td></tr>
+            <tr><td><code>lpkg install … --auto</code></td><td>Remove an existing install of the same id, then install</td></tr>
+            <tr><td><code>lpkg list</code></td><td>Inventory (<code>--outdated</code>, <code>--duplicates</code>, <code>--format json</code>)</td></tr>
+            <tr><td><code>lpkg upgrade</code></td><td>Upgrade outdated packages only</td></tr>
+            <tr><td><code>lpkg upgrade --all</code></td><td>Run each backend’s full upgrade</td></tr>
+            <tr><td><code>lpkg upgrade &lt;id&gt; --auto</code></td><td>Upgrade only if outdated; no-op if current</td></tr>
+            <tr><td><code>lpkg uninstall &lt;id&gt;</code></td><td>Remove a managed package (<code>--purge</code>, <code>--source</code>)</td></tr>
+            <tr><td><code>lpkg info / which</code></td><td>Inspect candidates and which backend provides a package</td></tr>
+            <tr><td><code>lpkg cleanup / scan / doctor</code></td><td>Maintenance and health checks</td></tr>
+            <tr><td><code>lpkg pin / export / import</code></td><td>Pinning and manifest round-trip</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Examples</h3>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>lpkg search firefox code
+lpkg install firefox --auto
+lpkg upgrade
+lpkg upgrade --all
+lpkg info firefox
+lpkg which firefox</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="uninstall" class="reveal">
+      <div class="wrap">
+        <p class="eyebrow">Removal</p>
+        <h2>Uninstall packages vs uninstall lpkg</h2>
+        <p>These are different operations. One removes software you manage <em>with</em> lpkg; the other removes the lpkg binary itself.</p>
+
+        <span class="split-label pkg">Managed packages</span>
+        <h3>Remove an app or package</h3>
+        <p>
+          Use the CLI. This asks the underlying backend (apt, flatpak, …) to uninstall and updates lpkg’s registry.
+          Optional <code>--purge</code> removes config where the backend supports it; <code>--source</code> picks which copy when duplicates exist.
+        </p>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>lpkg uninstall firefox
+lpkg uninstall firefox --purge
+lpkg uninstall code --source apt</code></pre>
+        </div>
+
+        <span class="split-label tool">The lpkg tool</span>
+        <h3>Remove lpkg from your system</h3>
+        <p>
+          How you installed determines how you uninstall. <code>make uninstall</code> only deletes the binary and shared data under your install prefix — it does <strong>not</strong> remove user config or the registry.
+        </p>
+
+        <h3>Installed with clone + make</h3>
+        <p>
+          From the repo directory (use the same <code>PREFIX</code> you used for install; default is <code>/usr/local</code>):
+        </p>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>sudo make uninstall
+# removes: $PREFIX/bin/lpkg
+#          $PREFIX/share/lpkg/</code></pre>
+        </div>
+        <p>Custom prefix example:</p>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>sudo make uninstall PREFIX=/usr/local</code></pre>
+        </div>
+
+        <h3>Installed from a .deb</h3>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>sudo dpkg -r lpkg
+# or
+sudo apt remove lpkg</code></pre>
+        </div>
+
+        <h3>Installed with cargo</h3>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>cargo uninstall lpkg</code></pre>
+        </div>
+
+        <h3>Installed via one-liner / manual binary</h3>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>sudo rm -f /usr/local/bin/lpkg
+sudo rm -rf /usr/local/share/lpkg</code></pre>
+        </div>
+
+        <div class="callout warn">
+          <p>
+            <strong>User data is kept on purpose.</strong>
+            After removing the tool, you may still have <code>~/.config/lpkg/</code> (config, aliases) and <code>~/.local/share/lpkg/</code> (registry).
+            To wipe those as well:
+          </p>
+        </div>
+        <div class="codeblock">
+          <button type="button" class="copy" data-copy>Copy</button>
+          <pre><code>rm -rf ~/.config/lpkg ~/.local/share/lpkg</code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>lpkg 0.2.0 · MIT License</span>
+      <a href="https://github.com/MatoloJr/lpkg">github.com/MatoloJr/lpkg</a>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      // Copy buttons
+      document.querySelectorAll("[data-copy]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var block = btn.closest(".codeblock");
+          var code = block && block.querySelector("code");
+          if (!code) return;
+          var text = code.textContent;
+          var done = function () {
+            btn.textContent = "Copied";
+            btn.classList.add("copied");
+            setTimeout(function () {
+              btn.textContent = "Copy";
+              btn.classList.remove("copied");
+            }, 1400);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done).catch(fallback);
+          } else {
+            fallback();
+          }
+          function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "absolute";
+            ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); done(); } catch (e) {}
+            document.body.removeChild(ta);
+          }
+        });
+      });
+
+      // Section reveal on scroll
+      var sections = document.querySelectorAll("section.reveal");
+      if ("IntersectionObserver" in window) {
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                io.unobserve(entry.target);
+              }
+            });
+          },
+          { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
+        );
+        sections.forEach(function (s) { io.observe(s); });
+      } else {
+        sections.forEach(function (s) { s.classList.add("visible"); });
+      }
+    })();
+  </script>
+</body>
+</html>
